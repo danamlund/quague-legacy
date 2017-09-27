@@ -7,6 +7,11 @@ void() player_stand1;
 void (vector org) spawn_tfog;
 void (vector org, entity death_owner) spawn_tdeath;
 
+void() MyPlayerPostThink;
+void() MyPlayerJump;
+float() firstTime;
+float() MyGotoNextMap;
+
 float	modelindex_eyes, modelindex_player;
 
 /*
@@ -43,22 +48,23 @@ void() SetChangeParms =
 	(IT_KEY1 | IT_KEY2 | IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD) );
 	
 // cap super health
-	if (self.health > 100)
-		self.health = 100;
-	if (self.health < 50)
-		self.health = 50;
+	//if (self.health > 100)
+	//	self.health = 100;
+	//if (self.health < 50)
+	//	self.health = 50;
 	parm1 = self.items;
 	parm2 = self.health;
 	parm3 = self.armorvalue;
-	if (self.ammo_shells < 25)
-		parm4 = 25;
-	else
-		parm4 = self.ammo_shells;
+	//if (self.ammo_shells < 25)
+	//	parm4 = 25;
+	//else
+	//	parm4 = self.ammo_shells;
 	parm5 = self.ammo_nails;
 	parm6 = self.ammo_rockets;
 	parm7 = self.ammo_cells;
 	parm8 = self.weapon;
 	parm9 = self.armortype * 100;
+        parm15 = self.max_health;
 };
 
 void() SetNewParms =
@@ -76,11 +82,11 @@ void() SetNewParms =
 
 void() DecodeLevelParms =
 {
-	if (serverflags)
-	{
-		if (world.model == "maps/start.bsp")
-			SetNewParms ();		// take away all stuff on starting new episode
-	}
+	//if (serverflags)
+	//{
+	//	if (world.model == "maps/start.bspo")
+	//		SetNewParms ();		// take away all stuff on starting new episode
+	//}
 	
 	self.items = parm1;
 	self.health = parm2;
@@ -91,6 +97,7 @@ void() DecodeLevelParms =
 	self.ammo_cells = parm7;
 	self.weapon = parm8;
 	self.armortype = parm9 * 0.01;
+        self.max_health = parm15;
 };
 
 /*
@@ -137,6 +144,10 @@ entity() FindIntermission =
 string nextmap;
 void() GotoNextMap =
 {
+        if (MyGotoNextMap()) {
+          return;
+        }
+        
 	if (cvar("samelevel"))	// if samelevel is set, stay on same level
 		changelevel (mapname);
 	else
@@ -370,7 +381,8 @@ void() respawn =
 	}
 	else
 	{	// restart the entire server
-		localcmd ("restart\n");
+		//localcmd ("restart\n");
+                changelevel ("start");
 	}
 };
 
@@ -409,7 +421,12 @@ entity() SelectSpawnPoint =
 	local	entity spot;
 	local	entity thing;
 	local	float  pcount;
-	
+
+        if (world.model == "maps/start.bsp" && !firstTime()) {
+       		spot = find (world, classname, "info_player_start2");
+                return spot;
+        }
+
 // testinfo_player_start is only found in regioned levels
 	spot = find (world, classname, "testplayerstart");
 	if (spot)
@@ -727,7 +744,7 @@ void() PlayerDeathThink =
 void() PlayerJump =
 {
 	local vector start, end;
-	
+
 	if (self.flags & FL_WATERJUMP)
 		return;
 	
@@ -767,6 +784,8 @@ void() PlayerJump =
 // player jumping sound
 	sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
 	self.velocity_z = self.velocity_z + 270;
+
+        MyPlayerJump();
 };
 
 
@@ -1112,6 +1131,7 @@ void() PlayerPostThink =
 {
 	local	float	mspeed, aspeed;
 	local	float	r;
+        local string s;
 
 	if (self.view_ofs == '0 0 0')
 		return;		// intermission or finale
@@ -1143,6 +1163,21 @@ void() PlayerPostThink =
 		self.jump_flag = self.velocity_z;
 
 	CheckPowerups ();
+
+/*
+        if (time < 5) {
+           sprint(self, "foo ");
+           s = ftos(13.47);
+           sprint(self, s);
+           sprint(self, "\n");
+           sprint(self, "bar");
+           //centerprint(self, "foo\n");
+           //centerprint(self, "bar\n");
+           //centerprint(self, "baz");
+        }
+        */
+
+        MyPlayerPostThink();
 };
 
 

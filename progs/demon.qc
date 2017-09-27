@@ -1,3 +1,5 @@
+void(string monster) MyKilledMonster;
+
 /*
 ==============================================================================
 
@@ -152,6 +154,7 @@ void()	demon1_die9		=[	$death9,		demon1_die9 ] {};
 
 void() demon_die =
 {
+        MyKilledMonster("demon");
 // check for gib
 	if (self.health < -80)
 	{

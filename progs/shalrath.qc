@@ -99,6 +99,7 @@ void() shalrath_pain =
 
 void() shalrath_die =
 {
+        MyKilledMonster("shalrath");
 // check for gib
 	if (self.health < -90)
 	{

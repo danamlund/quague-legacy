@@ -212,6 +212,7 @@ void()	knight_dieb11 = [	$deathb11,	knight_dieb11] {};
 
 void() knight_die =
 {
+        MyKilledMonster("knight");
 // check for gib
 	if (self.health < -40)
 	{

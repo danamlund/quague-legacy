@@ -287,6 +287,7 @@ void()	enf_fdie11	=[	$fdeath11,	enf_fdie11	] {};
 
 void() enf_die =
 {
+        MyKilledMonster("enforcer");
 // check for gib
 	if (self.health < -35)
 	{

@@ -1,3 +1,5 @@
+void(string monster) MyKilledMonster;
+
 /*
 ==============================================================================
 
@@ -368,8 +370,10 @@ void() lightning_use =
 			boss_shocka1();
 		else if (self.health == 1)
 			boss_shockb1();
-		else if (self.health == 0)
+		else if (self.health == 0) {
+                     MyKilledMonster("boss");
 			boss_shockc1();
+                }
 	}	
 };
 

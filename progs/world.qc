@@ -338,7 +338,7 @@ void() worldspawn =
 void() StartFrame =
 {
 	teamplay = cvar("teamplay");
-	skill = cvar("skill");
+	skill = 3; // cvar("skill");
 	framecount = framecount + 1;
 };
 

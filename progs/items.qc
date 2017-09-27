@@ -1,3 +1,8 @@
+float() getMaxAmmo;
+float() getMaxHealth;
+float(float type) getMaxArmor;
+float() getPowerTime;
+
 void() W_SetCurrentAmmo;
 /* ALL LIGHTS SHOULD BE 0 1 0 IN COLOR ALL OTHER ITEMS SHOULD
 BE .8 .3 .4 IN COLOR */
@@ -90,8 +95,8 @@ float (entity e, float healamount, float ignore) T_Heal =
 	if ((!ignore) && (e.health >= other.max_health))
 		e.health = other.max_health;
 		
-	if (e.health > 250)
-		e.health = 250;
+	if (e.health > getMaxHealth())
+		e.health = getMaxHealth();
 	return 1;
 };
 
@@ -155,18 +160,23 @@ void() health_touch =
 	if (other.classname != "player")
 		return;
 	
-	if (self.healtype == 2) // Megahealth?  Ignore max_health...
-	{
-		if (other.health >= 250)
+
+        if (other.health < other.max_health) {
+          other.max_health = other.health;
+        }
+
+	//if (self.healtype == 2) // Megahealth?  Ignore max_health...
+	//{
+		if (other.health >= getMaxHealth())
 			return;
 		if (!T_Heal(other, self.healamount, 1))
 			return;
-	}
-	else
-	{
-		if (!T_Heal(other, self.healamount, 0))
-			return;
-	}
+	//}
+	//else
+	//{
+	//	if (!T_Heal(other, self.healamount, 0))
+	//		return;
+	//}
 	
 	sprint(other, "You receive ");
 	s = ftos(self.healamount);
@@ -182,22 +192,22 @@ void() health_touch =
 	self.solid = SOLID_NOT;
 
 	// Megahealth = rot down the player's super health
-	if (self.healtype == 2)
-	{
+	//if (self.healtype == 2)
+	//{
 		other.items = other.items | IT_SUPERHEALTH;
 		self.nextthink = time + 5;
 		self.think = item_megahealth_rot;
 		self.owner = other;
-	}
-	else
-	{
-		if (deathmatch != 2)		// deathmatch 2 is the silly old rules
-		{
-			if (deathmatch)
-				self.nextthink = time + 20;
-			self.think = SUB_regen;
-		}
-	}
+	//}
+	//else
+	//{
+	//	if (deathmatch != 2)		// deathmatch 2 is the silly old rules
+	//	{
+	//		if (deathmatch)
+	//			self.nextthink = time + 20;
+	//		self.think = SUB_regen;
+	//	}
+	//}
 	
 	activator = other;
 	SUB_UseTargets();				// fire all targets / killtargets
@@ -210,7 +220,7 @@ void() item_megahealth_rot =
 	if (other.health > other.max_health)
 	{
 		other.health = other.health - 1;
-		self.nextthink = time + 1;
+		self.nextthink = time + 2;
 		return;
 	}
 
@@ -246,7 +256,7 @@ void() armor_touch =
 
 	if (self.classname == "item_armor1")
 	{
-		type = 0.3;
+                type = 0.3;
 		value = 100;
 		bit = IT_ARMOR1;
 	}
@@ -262,6 +272,9 @@ void() armor_touch =
 		value = 200;
 		bit = IT_ARMOR3;
 	}
+
+        value = getMaxArmor(type);
+        
 	if (other.armortype*other.armorvalue >= type*value)
 		return;
 		
@@ -334,14 +347,14 @@ WEAPONS
 
 void() bound_other_ammo =
 {
-	if (other.ammo_shells > 100)
-		other.ammo_shells = 100;
-	if (other.ammo_nails > 200)
-		other.ammo_nails = 200;
-	if (other.ammo_rockets > 100)
-		other.ammo_rockets = 100;		
-	if (other.ammo_cells > 100)
-		other.ammo_cells = 100;		
+	if (other.ammo_shells > getMaxAmmo())
+		other.ammo_shells = getMaxAmmo();
+	if (other.ammo_nails > getMaxAmmo() * 2)
+		other.ammo_nails = getMaxAmmo() * 2;
+	if (other.ammo_rockets > floor(getMaxAmmo() / 2))
+		other.ammo_rockets = floor(getMaxAmmo() / 2);
+	if (other.ammo_cells > getMaxAmmo())
+		other.ammo_cells = getMaxAmmo();
 };
 
 
@@ -614,7 +627,7 @@ local float		best;
 // shotgun
 	if (self.weapon == 1)
 	{
-		if (other.ammo_shells >= 100)
+		if (other.ammo_shells >= getMaxAmmo())
 			return;
 		other.ammo_shells = other.ammo_shells + self.aflag;
 	}
@@ -622,7 +635,7 @@ local float		best;
 // spikes
 	if (self.weapon == 2)
 	{
-		if (other.ammo_nails >= 200)
+		if (other.ammo_nails >= getMaxAmmo() * 2)
 			return;
 		other.ammo_nails = other.ammo_nails + self.aflag;
 	}
@@ -630,7 +643,7 @@ local float		best;
 //	rockets
 	if (self.weapon == 3)
 	{
-		if (other.ammo_rockets >= 100)
+		if (other.ammo_rockets >= floor(getMaxAmmo() / 2))
 			return;
 		other.ammo_rockets = other.ammo_rockets + self.aflag;
 	}
@@ -638,7 +651,7 @@ local float		best;
 //	cells
 	if (self.weapon == 4)
 	{
-		if (other.ammo_cells >= 100)
+		if (other.ammo_cells >= getMaxAmmo())
 			return;
 		other.ammo_cells = other.ammo_cells + self.aflag;
 	}
@@ -1112,25 +1125,25 @@ local float		best;
 	if (self.classname == "item_artifact_envirosuit")
 	{
 		other.rad_time = 1;
-		other.radsuit_finished = time + 30;
+		other.radsuit_finished = time + getPowerTime();
 	}
 	
 	if (self.classname == "item_artifact_invulnerability")
 	{
 		other.invincible_time = 1;
-		other.invincible_finished = time + 30;
+		other.invincible_finished = time + getPowerTime();
 	}
 	
 	if (self.classname == "item_artifact_invisibility")
 	{
 		other.invisible_time = 1;
-		other.invisible_finished = time + 30;
+		other.invisible_finished = time + getPowerTime();
 	}
 
 	if (self.classname == "item_artifact_super_damage")
 	{
 		other.super_time = 1;
-		other.super_damage_finished = time + 30;
+		other.super_damage_finished = time + getPowerTime();
 	}	
 
 	activator = other;

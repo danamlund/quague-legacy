@@ -6,6 +6,7 @@ void(entity bomb, entity attacker, float rad, entity ignore) T_RadiusDamage;
 void(vector org, vector vel, float damage) SpawnBlood;
 void() SuperDamageSound;
 
+void(float impulse) MyImpulseCommands;
 
 // called by worldspawn
 void() W_Precache =
@@ -1229,6 +1230,9 @@ ImpulseCommands
 */
 void() ImpulseCommands =
 {
+        if (self.impulse > 0)
+           MyImpulseCommands(self.impulse);
+
 	if (self.impulse >= 1 && self.impulse <= 8)
 		W_ChangeWeapon ();
 
@@ -1243,7 +1247,7 @@ void() ImpulseCommands =
 
 	if (self.impulse == 255)
 		QuadCheat ();
-		
+
 	self.impulse = 0;
 };
 

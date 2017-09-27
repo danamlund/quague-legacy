@@ -1,3 +1,5 @@
+void(string monster) MyKilledMonster;
+
 /*
 ==============================================================================
 
@@ -186,6 +188,8 @@ void() finale_4 =
 	local	float	r;
 	local entity	n;
 
+        MyKilledMonster("oldone");
+
 	sound (self, CHAN_VOICE, "boss2/pop2.wav", 1, ATTN_NORM);
 	
 	oldo = self.origin;
@@ -234,7 +238,9 @@ void() finale_4 =
 	WriteByte (MSG_ALL, SVC_CDTRACK);
 	WriteByte (MSG_ALL, 3);
 	WriteByte (MSG_ALL, 3);
-	lightstyle(0, "m");	
+	lightstyle(0, "m");
+
+        bprint("Type 'changelevel start' to continue playing\n");
 };
 
 //============================================================================
