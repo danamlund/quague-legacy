@@ -35,7 +35,7 @@ Ammo increases your starting and maximum ammo.
 After level 20 you get more ammo per pickup.
 
 Armor increases your starting and maximum armor.
-After level 20 your armor regenerate up to a small amount.
+After level 20 your gain armor by killing enemies.
 
 Powerup determines the time of power ups.
 After level 20 you start levels with quad damage for a short while.

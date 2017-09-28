@@ -5,6 +5,7 @@ float MyShowingMenu;
 float MyNextShowMenuTime;
 float MyShowingWelcome;
 float MyPrevHealthRotTime;
+float MyJustKilledMonster;
 
 void() addLevelsToArray =
 {
@@ -334,6 +335,7 @@ void() printProgressionStatus =
         MyPrint3("Max stable health=", maxHealth, "\n");
         if (shuffledLevels()) {
           local string levelNumber = ftos(getShuffledIndex());
+          addLevelsToArray();
           local string levelMax = ftos(array_size() + 1); // +1 for end
           MyPrint5("Shuffled level ", levelNumber, "/", levelMax, "\n");
         }
@@ -477,18 +479,24 @@ void() MyPlayerPostThink =
         if (time > 5 && MyPrevHealthRotTime < time - 2) {
            if (self.health > self.max_health) {
               self.health--;
+              MyPrevHealthRotTime = time;
            }
+        }
+
+
+        if (MyJustKilledMonster) {
+           MyJustKilledMonster = FALSE;
            if (getArmorLevel() > 20) {
               if (self.armorvalue == 0) {
-                 self.armorvalue = 1;
+                 self.armorvalue = 0;
                  self.armortype = 0.3;
                  self.items += IT_ARMOR1;
               }
-              else if (self.armorvalue * self.armortype < (getArmorLevel() - 20) * 5) {
-                   self.armorvalue++;
+              self.armorvalue += floor((getArmorLevel() - 20) / self.armortype);
+              if (self.armorvalue > getMaxArmor()) {
+                 self.armorvalue = getMaxArmor();
               }
            }
-           MyPrevHealthRotTime = time;
         }
 }
 
@@ -532,6 +540,8 @@ void(string monster) MyKilledMonster =
         }
            
         parm10 += value;
+
+        MyJustKilledMonster = TRUE;
 }
 
 float() MyGotoNextMap =
@@ -539,10 +549,10 @@ float() MyGotoNextMap =
         if (shuffledLevels()) {
           local float shuffledIndex = getShuffledIndex();
 
+          addLevelsToArray();
           if (shuffledIndex >= array_size() - 1) {
             changelevel("end");
           } else {
-            addLevelsToArray();
             array_shuffle(getShuffledRandom());
             changelevel(array_get(shuffledIndex));
 
