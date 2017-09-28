@@ -29,15 +29,18 @@ Upgrades
 Picked up health is lost over time down to your max health.
 Max health is the minimum health you have had during a run.
 Max boosted health is two times your starting health.
+After level 20 you get more health per pickup.
 
 Ammo increases your starting and maximum ammo.
+After level 20 you get more ammo per pickup.
 
 Armor increases your starting and maximum armor.
-
-Weapons is which weapons you start with.
+After level 20 your armor regenerate up to a small amount.
 
 Powerup determines the time of power ups.
-After many levels you also start levels with quad damage for a short while.
+After level 20 you start levels with quad damage for a short while.
+
+Weapons is which weapons you start with.
 
 Discount reduces prices down to 20%.
 

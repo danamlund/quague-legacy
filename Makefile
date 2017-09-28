@@ -1,11 +1,11 @@
 progs.dat: progs/client.qc
-	cd progs; ../../ftqqcc/fteqcc64
+	cd progs; fteqcc64
 
 clean:
 	rm -f progs.dat
 
 run: progs.dat
-	cd ..; ./quakespasm -game quaguelegacy
+	cd ..; ./quakespasm -game quague-legacy
 
 
 test: clean progs.dat run

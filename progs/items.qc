@@ -2,6 +2,8 @@ float() getMaxAmmo;
 float() getMaxHealth;
 float() getMaxArmor;
 float() getPowerTime;
+float() getHealthMultiplier;
+float() getAmmoMultiplier;
 
 void() W_SetCurrentAmmo;
 /* ALL LIGHTS SHOULD BE 0 1 0 IN COLOR ALL OTHER ITEMS SHOULD
@@ -169,7 +171,7 @@ void() health_touch =
 	//{
 		if (other.health >= getMaxHealth())
 			return;
-		if (!T_Heal(other, self.healamount, 1))
+		if (!T_Heal(other, floor(self.healamount * getHealthMultiplier()), 1))
 			return;
 	//}
 	//else
@@ -624,12 +626,13 @@ local float		best;
 	self = stemp;
 
 
+        local float amount = floor(self.aflag * getAmmoMultiplier());
 // shotgun
 	if (self.weapon == 1)
 	{
 		if (other.ammo_shells >= getMaxAmmo())
 			return;
-		other.ammo_shells = other.ammo_shells + self.aflag;
+		other.ammo_shells = other.ammo_shells + amount;
 	}
 
 // spikes
@@ -637,7 +640,7 @@ local float		best;
 	{
 		if (other.ammo_nails >= getMaxAmmo() * 2)
 			return;
-		other.ammo_nails = other.ammo_nails + self.aflag;
+		other.ammo_nails = other.ammo_nails + amount;
 	}
 
 //	rockets
@@ -645,7 +648,7 @@ local float		best;
 	{
 		if (other.ammo_rockets >= floor(getMaxAmmo() / 2))
 			return;
-		other.ammo_rockets = other.ammo_rockets + self.aflag;
+		other.ammo_rockets = other.ammo_rockets + amount;
 	}
 
 //	cells
@@ -653,7 +656,7 @@ local float		best;
 	{
 		if (other.ammo_cells >= getMaxAmmo())
 			return;
-		other.ammo_cells = other.ammo_cells + self.aflag;
+		other.ammo_cells = other.ammo_cells + amount;
 	}
 
 	bound_other_ammo ();

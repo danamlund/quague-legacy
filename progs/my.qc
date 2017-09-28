@@ -41,6 +41,15 @@ void() addLevelsToArray =
         array_add("e4m8");
 }
 
+void() MyWorldspawn =
+{
+        // cache quad sounds in case getPowerLevel() > 20
+	precache_model ("progs/quaddama.mdl");
+	precache_sound ("items/damage.wav");
+	precache_sound ("items/damage2.wav");
+	precache_sound ("items/damage3.wav");
+}
+
 float() getMoney =
 {
         return parm10;
@@ -58,6 +67,13 @@ float() getHealthLevel =
 float() getMaxHealth =
 {
         return 50 + getHealthLevel() * 10;
+}
+float() getHealthMultiplier =
+{
+        if (getHealthLevel() <= 20) {
+          return 1.0;
+        }
+        return 1.0 + (getHealthLevel() - 20) * 0.1;
 }
 void(float level) setHealthLevel =
 {
@@ -91,6 +107,13 @@ float() getMaxAmmo =
 {
         return 20 + 4 * getAmmoLevel();
 }
+float() getAmmoMultiplier =
+{
+        if (getAmmoLevel() <= 20) {
+           return 1.0;
+        }
+        return 1.0 + (getAmmoLevel() - 20) * 0.1;
+}
 void(float level) setAmmoLevel =
 {
         local float high, mid;
@@ -117,7 +140,7 @@ float() getPowerLevel =
 }
 float() getPowerTimeStart =
 {
-        if (getPowerLevel() >= 20) {
+        if (getPowerLevel() > 20) {
           return floor(getPowerLevel() / 5.0);
         }
         return 0;
@@ -454,8 +477,18 @@ void() MyPlayerPostThink =
         if (time > 5 && MyPrevHealthRotTime < time - 2) {
            if (self.health > self.max_health) {
               self.health--;
-              MyPrevHealthRotTime = time;
            }
+           if (getArmorLevel() > 20) {
+              if (self.armorvalue == 0) {
+                 self.armorvalue = 1;
+                 self.armortype = 0.3;
+                 self.items += IT_ARMOR1;
+              }
+              else if (self.armorvalue * self.armortype < (getArmorLevel() - 20) * 5) {
+                   self.armorvalue++;
+              }
+           }
+           MyPrevHealthRotTime = time;
         }
 }
 
