@@ -11,4 +11,4 @@ run: progs.dat
 test: clean progs.dat run
 
 zip: progs.dat
-	zip -r quaguelegacy_v1_0.zip quague_legacy_readme.txt progs.dat progs Makefile
+	zip -r quaguelegacy_v1_0.zip readme.txt progs.dat
