@@ -217,6 +217,51 @@ void() printBuyAmmo =
         writeChar ('\n');
 }
 
+void() printMaxPower =
+{
+        writeChar ('M');
+        writeChar ('a');
+        writeChar ('x');
+        writeChar (' ');
+        writeChar ('p');
+        writeChar ('o');
+        writeChar ('w');
+        writeChar ('e');
+        writeChar ('r');
+        writeChar ('u');
+        writeChar ('p');
+        writeChar ('!');
+        writeChar ('\n');
+}
+void() printBuyPower =
+{
+        writeChar (GOLD_0 + 4);
+        writeChar (':');
+        writeChar (' ');
+        writeChar ('P');
+        writeChar ('o');
+        writeChar ('w');
+        writeChar ('e');
+        writeChar ('r');
+        writeChar ('u');
+        writeChar ('p');
+        writeChar (' ');
+        writeChar (' ');
+        writeChar (' ');
+        writeChar ('(');
+        writeFloat (getPowerLevel(), 3);
+        writeChar (')');
+        writeChar (' ');
+        writeChar ('c');
+        writeChar ('o');
+        writeChar ('s');
+        writeChar ('t');
+        writeChar (':');
+        writeChar (' ');
+        writeFloat (getHealthArmorAmmoCost(getPowerLevel() + 1), 5);
+        writeChar ('\n');
+}
+
 void() printMaxWeapons =
 {
         writeChar ('M');
@@ -235,7 +280,7 @@ void() printMaxWeapons =
 }
 void() printBuyWeapons =
 {
-        writeChar (GOLD_0 + 4);
+        writeChar (GOLD_0 + 5);
         writeChar (':');
         writeChar (' ');
         writeChar ('W');
@@ -264,51 +309,6 @@ void() printBuyWeapons =
 
 void() printNewline =
 {
-        writeChar ('\n');
-}
-
-void() printMaxPower =
-{
-        writeChar ('M');
-        writeChar ('a');
-        writeChar ('x');
-        writeChar (' ');
-        writeChar ('p');
-        writeChar ('o');
-        writeChar ('w');
-        writeChar ('e');
-        writeChar ('r');
-        writeChar ('u');
-        writeChar ('p');
-        writeChar ('!');
-        writeChar ('\n');
-}
-void() printBuyPower =
-{
-        writeChar (GOLD_0 + 5);
-        writeChar (':');
-        writeChar (' ');
-        writeChar ('P');
-        writeChar ('o');
-        writeChar ('w');
-        writeChar ('e');
-        writeChar ('r');
-        writeChar ('u');
-        writeChar ('p');
-        writeChar (' ');
-        writeChar (' ');
-        writeChar (' ');
-        writeChar ('(');
-        writeFloat (getPowerLevel(), 3);
-        writeChar (')');
-        writeChar (' ');
-        writeChar ('c');
-        writeChar ('o');
-        writeChar ('s');
-        writeChar ('t');
-        writeChar (':');
-        writeChar (' ');
-        writeFloat (getPowerCost(getPowerLevel() + 1), 5);
         writeChar ('\n');
 }
 
@@ -473,16 +473,16 @@ void() printMenu =
            printBuyAmmo();
         }
 
-        if (getWeaponLevel() == 6) {
-           printMaxWeapons();
-        } else {
-           printBuyWeapons();
-        }
-
         if (getPowerLevel() == 255) {
            printMaxPower();
         } else {
            printBuyPower();
+        }
+
+        if (getWeaponLevel() == 6) {
+           printMaxWeapons();
+        } else {
+           printBuyWeapons();
         }
 
         if (getDiscountLevel() == 80) {

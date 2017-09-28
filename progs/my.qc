@@ -4,8 +4,7 @@ float MyTriggeredNewLevel;
 float MyShowingMenu;
 float MyNextShowMenuTime;
 float MyShowingWelcome;
-
-float LEVEL_AMOUNT = 30;
+float MyPrevHealthRotTime;
 
 void() addLevelsToArray =
 {
@@ -72,9 +71,9 @@ float() getArmorLevel =
 {
         return getMid(parm12);
 }
-float(float type) getMaxArmor =
+float() getMaxArmor =
 {
-        return floor(getArmorLevel() * 4 / type);
+        return 10 * getArmorLevel();
 }
 void(float level) setArmorLevel =
 {
@@ -118,14 +117,14 @@ float() getPowerLevel =
 }
 float() getPowerTimeStart =
 {
-        if (getPowerLevel() > 50) {
-          return floor(getPowerLevel() / 20.0);
+        if (getPowerLevel() >= 20) {
+          return floor(getPowerLevel() / 5.0);
         }
         return 0;
 }
 float() getPowerTime =
 {
-        return 10 + floor(getPowerLevel() / 5);
+        return 10 + getPowerLevel();
 }
 void(float level) setPowerLevel =
 {
@@ -238,16 +237,12 @@ float() isStartMap =
 
 float(float level) getHealthArmorAmmoCost =
 {
-        return floor(getDiscount() *
-                     (level * 10 + floor(getHealthLevel() + getArmorLevel() + getAmmoLevel())));
+        local float allLevels = getHealthLevel() + getArmorLevel() + getAmmoLevel() + getPowerLevel();
+        return floor(getDiscount() * (level * 10 + floor(allLevels / 2)));
 }
 float(float level) getWeaponCost =
 {
         return floor(getDiscount() * level * 100);
-}
-float(float level) getPowerCost =
-{
-        return floor(getDiscount() * level * 50);
 }
 
 void() setStartGear =
@@ -280,8 +275,8 @@ void() setStartGear =
 
         self.ammo_shells = getMaxAmmo();
 
-        if (getMaxArmor(0.6) > 0) {
-          self.armorvalue = getMaxArmor(0.6);
+        if (getMaxArmor() > 0) {
+          self.armorvalue = getMaxArmor();
           self.armortype = 0.6;
           self.items += IT_ARMOR2;
         }
@@ -316,7 +311,7 @@ void() printProgressionStatus =
         MyPrint3("Max stable health=", maxHealth, "\n");
         if (shuffledLevels()) {
           local string levelNumber = ftos(getShuffledIndex());
-          local string levelMax = ftos(LEVEL_AMOUNT + 1); // +1 for end
+          local string levelMax = ftos(array_size() + 1); // +1 for end
           MyPrint5("Shuffled level ", levelNumber, "/", levelMax, "\n");
         }
 }
@@ -341,15 +336,15 @@ void(float impulse) MyImpulseCommands =
               if (getMoney() >= cost) {
                 setAmmoLevel(getAmmoLevel() + 1);
               }
-           } else if (impulse == 4 && getWeaponLevel() < 6) {
+           } else if (impulse == 4 && getPowerLevel() < 255) {
+              cost = getHealthArmorAmmoCost(getPowerLevel() + 1);
+              if (getMoney() >= cost) {
+                setPowerLevel(getPowerLevel() + 1);
+              }
+           } else if (impulse == 5 && getWeaponLevel() < 6) {
               cost = getWeaponCost(getWeaponLevel() + 1);
               if (getMoney() >= cost) {
                 setWeaponLevel(getWeaponLevel() + 1);
-              }
-           } else if (impulse == 5 && getPowerLevel() < 255) {
-              cost = getPowerCost(getPowerLevel() + 1);
-              if (getMoney() >= cost) {
-                setPowerLevel(getPowerLevel() + 1);
               }
            } else if (impulse == 6 && getDiscountLevel() < 80) {
               cost = getHealthArmorAmmoCost(getDiscountLevel() + 1);
@@ -455,6 +450,13 @@ void() MyPlayerPostThink =
             MyNextShowMenuTime = time + 1;
           }
         }
+
+        if (time > 5 && MyPrevHealthRotTime < time - 2) {
+           if (self.health > self.max_health) {
+              self.health--;
+              MyPrevHealthRotTime = time;
+           }
+        }
 }
 
 void() MyPlayerJump =
@@ -504,7 +506,7 @@ float() MyGotoNextMap =
         if (shuffledLevels()) {
           local float shuffledIndex = getShuffledIndex();
 
-          if (shuffledIndex >= LEVEL_AMOUNT - 1) {
+          if (shuffledIndex >= array_size() - 1) {
             changelevel("end");
           } else {
             addLevelsToArray();

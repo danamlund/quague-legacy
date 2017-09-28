@@ -1,6 +1,6 @@
 float() getMaxAmmo;
 float() getMaxHealth;
-float(float type) getMaxArmor;
+float() getMaxArmor;
 float() getPowerTime;
 
 void() W_SetCurrentAmmo;
@@ -195,8 +195,8 @@ void() health_touch =
 	//if (self.healtype == 2)
 	//{
 		other.items = other.items | IT_SUPERHEALTH;
-		self.nextthink = time + 5;
-		self.think = item_megahealth_rot;
+		//self.nextthink = time + 5;
+		//self.think = item_megahealth_rot;
 		self.owner = other;
 	//}
 	//else
@@ -273,7 +273,7 @@ void() armor_touch =
 		bit = IT_ARMOR3;
 	}
 
-        value = getMaxArmor(type);
+        value = getMaxArmor();
         
 	if (other.armortype*other.armorvalue >= type*value)
 		return;

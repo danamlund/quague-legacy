@@ -3,7 +3,7 @@ Version  : 1.0
 Date     : 2017-09-24
 Author   : Dan Amlund
 Email    : dan@danamlund.dk
-Web site : ...
+Web site : https://github.com/danamlund/quague-legacy
 Thanks   : Cellar Door Games for making Rogue Legacy
          : http://cellardoorgames.com/our-games/rogue-legacy/
 
@@ -41,7 +41,7 @@ After many levels you also start levels with quad damage for a short while.
 
 Discount reduces prices down to 20%.
 
-Level 10 is about normal quake level. Max level is 255 (80 for discount).
+Level 20 is about normal quake level. Max level is 255 (80 for discount).
 
 
 ------------
