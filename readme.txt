@@ -1,5 +1,5 @@
 Title    : Quague Legacy
-Version  : 1.0
+Version  : 1.1
 Date     : 2017-09-24
 Author   : Dan Amlund
 Email    : dan@danamlund.dk
