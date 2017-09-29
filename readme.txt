@@ -17,7 +17,7 @@ You play the regular quake single player levels.
 You start out very weak.
 Killing monsters gives money.
 When you die, you spawn back at start and can buy upgrades with your money.
-When you start playing again you loose your remaining money (so spend it all).
+When you start playing again you lose your remaining money (so spend it all).
 
 Save-loading remembers your progress. Save-loading to avoid death is discouraged.
 If you want to play other levels use "changelevel mylevel" ("map mylevel" deletes your progress).
