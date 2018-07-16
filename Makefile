@@ -11,4 +11,4 @@ run: progs.dat
 test: clean progs.dat run
 
 zip: progs.dat
-	zip -r quaguelegacy_v1_1.zip readme.txt progs.dat
+	zip -r quaguelegacy_v1_1.zip readme.txt progs.dat LICENSE
