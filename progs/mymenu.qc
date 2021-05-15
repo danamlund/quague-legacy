@@ -312,40 +312,40 @@ void() printNewline =
         writeChar ('\n');
 }
 
-void() printMaxDiscount =
+void() printMaxScavenge =
 {
         writeChar ('M');
         writeChar ('a');
         writeChar ('x');
         writeChar (' ');
-        writeChar ('d');
-        writeChar ('i');
         writeChar ('s');
         writeChar ('c');
-        writeChar ('o');
-        writeChar ('u');
+        writeChar ('a');
+        writeChar ('v');
+        writeChar ('e');
         writeChar ('n');
-        writeChar ('t');
+        writeChar ('g');
+        writeChar ('e');
         writeChar ('!');
         writeChar ('\n');
 }
-void() printBuyDiscount =
+void() printBuyScavenge =
 {
         writeChar (GOLD_0 + 6);
         writeChar (':');
         writeChar (' ');
-        writeChar ('D');
-        writeChar ('i');
-        writeChar ('s');
+        writeChar ('S');
         writeChar ('c');
-        writeChar ('o');
-        writeChar ('u');
+        writeChar ('a');
+        writeChar ('v');
+        writeChar ('e');
         writeChar ('n');
-        writeChar ('t');
+        writeChar ('g');
+        writeChar ('e');
         writeChar (' ');
         writeChar (' ');
         writeChar ('(');
-        writeFloat (getDiscountLevel(), 3);
+        writeFloat (getScavengeLevel(), 3);
         writeChar (')');
         writeChar (' ');
         writeChar ('c');
@@ -354,7 +354,7 @@ void() printBuyDiscount =
         writeChar ('t');
         writeChar (':');
         writeChar (' ');
-        writeFloat (getHealthArmorAmmoCost(getDiscountLevel() + 1), 5);
+        writeFloat (getHealthArmorAmmoCost(getScavengeLevel() + 1), 5);
         writeChar ('\n');
 }
 
@@ -479,16 +479,16 @@ void() printMenu =
            printBuyPower();
         }
 
-        if (getWeaponLevel() == 6) {
+        if (getWeaponLevel() == 16) {
            printMaxWeapons();
         } else {
            printBuyWeapons();
         }
 
-        if (getDiscountLevel() == 80) {
-           printMaxDiscount();
+        if (getScavengeLevel() == 255) {
+           printMaxScavenge();
         } else {
-           printBuyDiscount();
+           printBuyScavenge();
         }
 
         printNewline();

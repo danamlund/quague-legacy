@@ -1,6 +1,6 @@
 float() getMaxAmmo;
 float() getMaxHealth;
-float() getMaxArmor;
+float() getArmorMultiplier;
 float() getPowerTime;
 float() getHealthMultiplier;
 float() getAmmoMultiplier;
@@ -275,7 +275,7 @@ void() armor_touch =
 		bit = IT_ARMOR3;
 	}
 
-        value = getMaxArmor();
+        value = value * getArmorMultiplier();
         
 	if (other.armortype*other.armorvalue >= type*value)
 		return;

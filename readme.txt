@@ -1,6 +1,6 @@
 Title    : Quague Legacy
-Version  : 1.1
-Date     : 2017-09-24
+Version  : 1.2
+Date     : 2021-05-10
 Author   : Dan Amlund
 Email    : dan@danamlund.dk
 Web site : https://github.com/danamlund/quague-legacy
@@ -15,12 +15,17 @@ Single player quake with a Rogue Legacy progression system.
 
 You play the regular quake single player levels.
 You start out very weak.
-Killing monsters gives money.
+You get money by killing monsters, finishing level with many kills, and finding secrets.
 When you die, you spawn back at start and can buy upgrades with your money.
 When you start playing again you lose your remaining money (so spend it all).
 
 Save-loading remembers your progress. Save-loading to avoid death is discouraged.
 If you want to play other levels use "changelevel mylevel" ("map mylevel" deletes your progress).
+
+I play by selecting difficulty, then pressing 8 to run through all
+quake levels in randomized order, die, buy upgrades, and press 8
+again. Repeating until I become powerful enough to finish all 32
+levels without dying.
 
 
 --------
@@ -35,23 +40,24 @@ Ammo increases your starting and maximum ammo.
 After level 20 you get more ammo per pickup.
 
 Armor increases your starting and maximum armor.
-After level 20 your gain armor by killing enemies.
+After level 20 your gain armor when killing monster.
 
 Powerup determines the time of power ups.
 After level 20 you start levels with quad damage for a short while.
 
-Weapons is which weapons you start with.
+Weapons is which weapons you start with. Additional weapons are quad axe, and multi shafts.
 
-Discount reduces prices down to 20%.
+Scavenge gives ammo when completing maps.
+After level 20 you get ammo when killing monsters.
 
-Level 20 is about normal quake level. Max level is 255 (80 for discount).
+Level 20 is about normal quake level. Max level is 255.
 
 
 ------------
 Installation
 ------------
-1. Unzip so you have 'quake/quague_legacy/progs.dat'
-2. Run 'quake/myquake.exe -game quague_legacy'
+1. Unzip so you have 'quake/quaguelegacy/progs.dat'
+2. Run 'quake/myquake.exe -game quaguelegacy'
 
 
 -------
@@ -59,3 +65,14 @@ Impulse
 -------
 impulse 160 prints a status of your levels.
 impulse 161 gives you one million money.
+
+-------------
+Changelog 1.2
+-------------
+Change armor to be percentage of total armor based on level.
+Change start armor to green.
+Change ammo multipliers to default quake (100 max shells,rockets, 200 max nails,cells).
+Add new weapon quad axe.
+Add new weapon multi shafts.
+Give money when completing level and extra with 90% kills and extra with secrets.
+Remove discount and replace it with scavenge.

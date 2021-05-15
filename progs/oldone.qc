@@ -240,7 +240,7 @@ void() finale_4 =
 	WriteByte (MSG_ALL, 3);
 	lightstyle(0, "m");
 
-        bprint("Type 'changelevel start' to continue playing\n");
+        bprint("Type 'changelevel start' to continue playing quague legacy\n");
 };
 
 //============================================================================

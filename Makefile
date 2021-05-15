@@ -7,8 +7,11 @@ clean:
 run: progs.dat
 	cd ..; ./quakespasm -game quague-legacy
 
-
 test: clean progs.dat run
 
 zip: progs.dat
-	zip -r quaguelegacy_v1_1.zip readme.txt progs.dat LICENSE
+	rm -rf /tmp/quaguelegacy
+	mkdir -p /tmp/quaguelegacy/quaguelegacy
+	cp -r readme.txt progs.dat LICENSE progs /tmp/quaguelegacy/quaguelegacy/
+	cd /tmp/quaguelegacy; zip -r quaguelegacy_v1_2.zip .
+	cp /tmp/quaguelegacy/*.zip .

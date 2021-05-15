@@ -1,7 +1,6 @@
 
 entity stemp, otemp, s, old;
 
-
 void() trigger_reactivate =
 {
 	self.solid = SOLID_TRIGGER;

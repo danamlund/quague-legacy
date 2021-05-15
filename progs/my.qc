@@ -6,6 +6,7 @@ float MyNextShowMenuTime;
 float MyShowingWelcome;
 float MyPrevHealthRotTime;
 float MyJustKilledMonster;
+float MyGotMapDoneMoney;
 
 void() addLevelsToArray =
 {
@@ -61,6 +62,12 @@ void(float money) setMoney =
         parm10 = money;
 }
 
+float(float money) addMoney =
+{
+        parm10 = parm10 + money;
+        return money;
+}
+
 float() getHealthLevel =
 {
         return getHigh(parm12);
@@ -88,9 +95,9 @@ float() getArmorLevel =
 {
         return getMid(parm12);
 }
-float() getMaxArmor =
+float() getArmorMultiplier =
 {
-        return 10 * getArmorLevel();
+        return getArmorLevel() / 20;
 }
 void(float level) setArmorLevel =
 {
@@ -142,7 +149,11 @@ float() getPowerLevel =
 float() getPowerTimeStart =
 {
         if (getPowerLevel() > 20) {
-          return floor(getPowerLevel() / 5.0);
+          local float time = floor(getPowerLevel() / 5.0);
+          if (time > 60) {
+            time = 60;
+          }
+          return time;
         }
         return 0;
 }
@@ -158,15 +169,15 @@ void(float level) setPowerLevel =
         parm13 = encode(high, level, low);
 }
 
-float() getDiscountLevel =
+float() getScavengeLevel =
 {
         return getLow(parm13);
 }
-float() getDiscount =
+float() getScavenge =
 {
-        return 1.0 - getDiscountLevel() / 100;
+        return 1.0 - getScavengeLevel() / 100;
 }
-void(float level) setDiscountLevel =
+void(float level) setScavengeLevel =
 {
         local float high, mid;
         high = getHigh(parm13);
@@ -262,28 +273,40 @@ float() isStartMap =
 float(float level) getHealthArmorAmmoCost =
 {
         local float allLevels = getHealthLevel() + getArmorLevel() + getAmmoLevel() + getPowerLevel();
-        return floor(getDiscount() * (level * 10 + floor(allLevels / 2)));
+        local float cost = floor(level * 10 + floor(allLevels / 2));
+        if (cost > 300) cost = 300;
+        return cost;
 }
 float(float level) getWeaponCost =
 {
-        return floor(getDiscount() * level * 100);
+        return floor(level * 100);
+}
+
+float(float v) getNails =
+{
+        return v * 2;
+}
+
+float(float v) getCells =
+{
+        return v * 2;
 }
 
 void() setStartGear =
 {
-        self.max_health = 20 + getHealthLevel() * 10;
+        self.max_health = 20 + getHealthLevel() * 5;
         self.health = self.max_health;
 
         self.items = IT_AXE + IT_SHOTGUN;
         if (getWeaponLevel() >= 1) {
            self.items += IT_NAILGUN;
-           self.ammo_nails = getMaxAmmo();
+           self.ammo_nails = getNails(getMaxAmmo());
         }
         if (getWeaponLevel() >= 2) {
            self.items += IT_SUPER_SHOTGUN;
         }
         if (getWeaponLevel() >= 3) {
-           self.ammo_rockets = floor(getMaxAmmo() / 4);
+           self.ammo_rockets = getMaxAmmo();
            self.items += IT_GRENADE_LAUNCHER;
         }
         if (getWeaponLevel() >= 4) {
@@ -293,16 +316,16 @@ void() setStartGear =
            self.items += IT_ROCKET_LAUNCHER;
         }
         if (getWeaponLevel() >= 6) {
-           self.ammo_cells = floor(getMaxAmmo() / 2);
+           self.ammo_cells = getCells(getMaxAmmo());
            self.items += IT_LIGHTNING;
         }
 
         self.ammo_shells = getMaxAmmo();
 
-        if (getMaxArmor() > 0) {
-          self.armorvalue = getMaxArmor();
-          self.armortype = 0.6;
-          self.items += IT_ARMOR2;
+        if (getArmorLevel() > 0) {
+          self.armorvalue = getArmorMultiplier() * 100;
+          self.armortype = 0.3;
+          self.items += IT_ARMOR1;
         }
 
         self.weapon = IT_SHOTGUN;
@@ -325,11 +348,11 @@ void() printProgressionStatus =
         local string ammo = ftos(getAmmoLevel());
         local string weapons = ftos(getWeaponLevel());
         local string powerup = ftos(getPowerLevel());
-        local string discount = ftos(getDiscountLevel());
+        local string scavenge = ftos(getScavengeLevel());
 
         MyPrint6("Money=", money, " Health=", health, " Armor=", armor);
         MyPrint6(" Ammo=", ammo, " Wpn=", weapons, " Power=", powerup);
-        MyPrint3(" Discount=", discount, "\n");
+        MyPrint3(" Scavenge=", scavenge, "\n");
 
         local string maxHealth = ftos(self.max_health);
         MyPrint3("Max stable health=", maxHealth, "\n");
@@ -341,40 +364,72 @@ void() printProgressionStatus =
         }
 }
 
+float() getScavengedAmmo =
+{
+        if (getScavengeLevel() <= 20) return 0;
+        local float val = random() * (getScavengeLevel()-20);
+        local float decimals = val - floor(val);
+        if (random() > decimals) val++;
+        return floor(val);
+}
+
+void() validateMax =
+{
+        if (self.health > self.max_health) self.health = self.max_health;
+        if (self.ammo_shells > getMaxAmmo()) self.ammo_shells = getMaxAmmo();
+        if (self.ammo_nails > getNails(getMaxAmmo())) self.ammo_nails = getNails(getMaxAmmo());
+        if (self.ammo_rockets > getMaxAmmo()) self.ammo_rockets = getMaxAmmo();
+        if (self.ammo_cells > getCells(getMaxAmmo())) self.ammo_cells = getCells(getMaxAmmo());
+}
+
 void(float impulse) MyImpulseCommands =
 {
         if (MyShowingMenu || MyShowingWelcome) {
            local float cost;
+           local string boughtType = "";
+           local float boughtLevel = 0;
            cost = 0;
            if (impulse == 1 && getHealthLevel() < 255) {
               cost = getHealthArmorAmmoCost(getHealthLevel() + 1);
               if (getMoney() >= cost) {
                 setHealthLevel(getHealthLevel() + 1);
+                boughtType = "health";
+                boughtLevel = getHealthLevel();
               }
            } else if (impulse == 2 && getArmorLevel() < 255) {
               cost = getHealthArmorAmmoCost(getArmorLevel() + 1);
               if (getMoney() >= cost) {
                 setArmorLevel(getArmorLevel() + 1);
+                boughtType = "armor";
+                boughtLevel = getArmorLevel();
               }
            } else if (impulse == 3 && getAmmoLevel() < 255) {
               cost = getHealthArmorAmmoCost(getAmmoLevel() + 1);
               if (getMoney() >= cost) {
                 setAmmoLevel(getAmmoLevel() + 1);
+                boughtType = "ammo";
+                boughtLevel = getAmmoLevel();
               }
            } else if (impulse == 4 && getPowerLevel() < 255) {
               cost = getHealthArmorAmmoCost(getPowerLevel() + 1);
               if (getMoney() >= cost) {
                 setPowerLevel(getPowerLevel() + 1);
+                boughtType = "powerup";
+                boughtLevel = getPowerLevel();
               }
-           } else if (impulse == 5 && getWeaponLevel() < 6) {
+           } else if (impulse == 5 && getWeaponLevel() < 16) {
               cost = getWeaponCost(getWeaponLevel() + 1);
               if (getMoney() >= cost) {
                 setWeaponLevel(getWeaponLevel() + 1);
+                boughtType = "weapon";
+                boughtLevel = getWeaponLevel();
               }
-           } else if (impulse == 6 && getDiscountLevel() < 80) {
-              cost = getHealthArmorAmmoCost(getDiscountLevel() + 1);
+           } else if (impulse == 6 && getScavengeLevel() < 255) {
+              cost = getHealthArmorAmmoCost(getScavengeLevel() + 1);
               if (getMoney() >= cost) {
-                setDiscountLevel(getDiscountLevel() + 1);
+                setScavengeLevel(getScavengeLevel() + 1);
+                boughtType = "scavenge";
+                boughtLevel = getScavengeLevel();
               }
            }
 
@@ -382,8 +437,8 @@ void(float impulse) MyImpulseCommands =
               setMoney(getMoney() - cost);
               setStartGear();
               printMenu();
-           }
-           if (cost > 0 && getMoney() < cost) {
+              MyPrint5("Bought ", boughtType, " ", ftos(boughtLevel), "!\n");
+           } else if (cost > 0 && getMoney() < cost) {
               sprint(self, "Not enough money\n");
            }
 
@@ -408,8 +463,9 @@ void(float impulse) MyImpulseCommands =
         }
 }
 
-void(float died) MyNewMap =
+void() MyNewMap =
 {
+        MyGotMapDoneMoney = FALSE;
         if (resetMoneyNextLevel()) {
           setMoney(0);
           setResetMoneyNextLevel(FALSE);
@@ -423,17 +479,17 @@ void(float died) MyNewMap =
              // clear runes so episodes are not closed off on start map
              serverflags = 0;
              changelevel("start");
+             return;
            }
 
            setStartGear();
            MyShowingMenu = TRUE;
            setShuffledLevels(FALSE);
-        } else {
-           printProgressionStatus();
-        }
-        if (died) {
+
            setDeaths(getDeaths() + 1);
            setResetMoneyNextLevel(TRUE);
+        } else {
+           printProgressionStatus();
         }
 }
 
@@ -461,11 +517,7 @@ void() MyPlayerPostThink =
         
 
         if (time > 2.0 && !MyTriggeredNewLevel) {
-          if (isStartMap() && !serverflags && !shuffledLevels()) { // serverflags empty if no runes
-            MyNewMap(TRUE);
-          } else {
-            MyNewMap(FALSE);
-          }
+          MyNewMap();
           MyTriggeredNewLevel = TRUE;
         }
 
@@ -492,11 +544,19 @@ void() MyPlayerPostThink =
                  self.armortype = 0.3;
                  self.items += IT_ARMOR1;
               }
-              self.armorvalue += floor((getArmorLevel() - 20) / self.armortype);
-              if (self.armorvalue > getMaxArmor()) {
-                 self.armorvalue = getMaxArmor();
+              if (self.armorvalue < getArmorLevel()) {
+                self.armorvalue += floor((getArmorLevel() - 20) / self.armortype);
               }
            }
+
+          if (getScavengeLevel() > 20) {
+             local float randomValue = random();
+             if (randomValue < 0.25) self.ammo_shells += getScavengedAmmo();
+             else if (randomValue < 0.5) self.ammo_nails += getNails(getScavengedAmmo());
+             else if (randomValue < 0.75) self.ammo_rockets += getScavengedAmmo();
+             else self.ammo_cells += getCells(getScavengedAmmo());
+             validateMax();
+          }
         }
 }
 
@@ -529,23 +589,49 @@ void(string monster) MyKilledMonster =
            value = 7;
         } else if (monster == "hknight") {
            value = 6;
-        } else if (monster == "shambler") {
-           value = 10;
         } else if (monster == "shalrath") {
            value = 10;
+        } else if (monster == "shambler") {
+           value = 15;
         } else if (monster == "boss") {
-           value = 100;
+           value = 20;
         } else if (monster == "oldone") {
            value = 10000;
         }
-           
-        parm10 += value;
+
+        addMoney(value);
 
         MyJustKilledMonster = TRUE;
 }
 
 float() MyGotoNextMap =
 {
+        local float moneyAdded;
+        if (!MyGotMapDoneMoney) {
+          MyGotMapDoneMoney = TRUE;
+          moneyAdded = addMoney(20);
+          MyPrint3("Got ", ftos(moneyAdded), " money for completing map\n");
+          
+          if (killed_monsters / total_monsters >= 0.9) {
+             moneyAdded = addMoney(20);
+             MyPrint3("Got ", ftos(moneyAdded), " money for killing 90 percent of monsters\n");
+          }
+          local float secretMoney = floor(20 * found_secrets / total_secrets);
+          if (secretMoney > 0) {
+             moneyAdded = addMoney(secretMoney);
+             MyPrint3("Got ", ftos(moneyAdded), " money for finding secrets\n");
+          }
+
+          if (getScavengeLevel() > 0) {
+            self.health += getScavengeLevel() * 2;
+            self.ammo_shells += getScavengeLevel();
+            self.ammo_nails += getNails(getScavengeLevel());
+            self.ammo_rockets += getScavengeLevel();
+            self.ammo_cells += getCells(getScavengeLevel());
+            validateMax();
+          }
+        }
+
         if (shuffledLevels()) {
           local float shuffledIndex = getShuffledIndex();
 
@@ -562,4 +648,57 @@ float() MyGotoNextMap =
           return TRUE;
         }
         return FALSE;
+}
+
+void() MyW_Attack =
+{
+	if ((self.weapon == IT_AXE && getWeaponLevel() >= 7) || (self.weapon == IT_LIGHTNING && getWeaponLevel() >= 8)) {
+          if (self.super_sound < time) {
+            self.super_sound = time + 1;
+            sound (self, CHAN_BODY, "items/damage3.wav", 1, ATTN_NORM);
+          }
+        }
+}
+
+float() MyGetAxeDamage =
+{
+        float dmg = 20;
+        if (getWeaponLevel() >= 7) {
+           dmg *= 4;
+        }
+        return dmg;
+}
+
+void() MyW_FireLightning =
+{
+        
+        if (getWeaponLevel() < 8)
+          return;
+        local float shafts = 2 + getWeaponLevel() - 8;
+
+        local float i, mul;
+        local entity tempEntity;
+        local vector org;
+        org = self.origin + '0 0 16';
+
+        i = 0;
+        while (i+1 < shafts) {
+          tempEntity = spawn();
+	  org = self.origin;
+          mul = 1 + floor(i/2);
+          if ((i % 2) == 0) mul *= -1;
+	  traceline (org, org + '0 0 16' + v_forward*600 + v_right*50*mul, TRUE, self);
+	  WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
+	  WriteByte (MSG_BROADCAST, TE_LIGHTNING2);
+	  WriteEntity (MSG_BROADCAST, tempEntity);
+	  WriteCoord (MSG_BROADCAST, org_x);
+	  WriteCoord (MSG_BROADCAST, org_y);
+	  WriteCoord (MSG_BROADCAST, org_z);
+	  WriteCoord (MSG_BROADCAST, trace_endpos_x);
+	  WriteCoord (MSG_BROADCAST, trace_endpos_y);
+	  WriteCoord (MSG_BROADCAST, trace_endpos_z);
+          LightningDamage (org, trace_endpos + v_forward*4 + v_right*50*mul, self, 30);
+          remove(tempEntity);
+          i++;
+        }
 }
