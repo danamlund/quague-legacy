@@ -4,6 +4,8 @@ float() getArmorMultiplier;
 float() getPowerTime;
 float() getHealthMultiplier;
 float() getAmmoMultiplier;
+float(float ammo) getNails;
+float(float ammo) getCells;
 
 void() W_SetCurrentAmmo;
 /* ALL LIGHTS SHOULD BE 0 1 0 IN COLOR ALL OTHER ITEMS SHOULD
@@ -351,12 +353,12 @@ void() bound_other_ammo =
 {
 	if (other.ammo_shells > getMaxAmmo())
 		other.ammo_shells = getMaxAmmo();
-	if (other.ammo_nails > getMaxAmmo() * 2)
-		other.ammo_nails = getMaxAmmo() * 2;
-	if (other.ammo_rockets > floor(getMaxAmmo() / 2))
-		other.ammo_rockets = floor(getMaxAmmo() / 2);
-	if (other.ammo_cells > getMaxAmmo())
-		other.ammo_cells = getMaxAmmo();
+	if (other.ammo_nails > getNails(getMaxAmmo()))
+		other.ammo_nails = getNails(getMaxAmmo());
+	if (other.ammo_rockets > getMaxAmmo())
+		other.ammo_rockets = getMaxAmmo();
+	if (other.ammo_cells > getCells(getMaxAmmo()))
+		other.ammo_cells = getCells(getMaxAmmo());
 };
 
 
@@ -638,7 +640,7 @@ local float		best;
 // spikes
 	if (self.weapon == 2)
 	{
-		if (other.ammo_nails >= getMaxAmmo() * 2)
+		if (other.ammo_nails >= getNails(getMaxAmmo()))
 			return;
 		other.ammo_nails = other.ammo_nails + amount;
 	}
@@ -646,7 +648,7 @@ local float		best;
 //	rockets
 	if (self.weapon == 3)
 	{
-		if (other.ammo_rockets >= floor(getMaxAmmo() / 2))
+		if (other.ammo_rockets >= getMaxAmmo())
 			return;
 		other.ammo_rockets = other.ammo_rockets + amount;
 	}
@@ -654,7 +656,7 @@ local float		best;
 //	cells
 	if (self.weapon == 4)
 	{
-		if (other.ammo_cells >= getMaxAmmo())
+		if (other.ammo_cells >= getCells(getMaxAmmo()))
 			return;
 		other.ammo_cells = other.ammo_cells + amount;
 	}

@@ -1,6 +1,6 @@
 Title    : Quague Legacy
-Version  : 1.2
-Date     : 2021-05-10
+Version  : 1.3
+Date     : 2021-06-13
 Author   : Dan Amlund
 Email    : dan@danamlund.dk
 Web site : https://github.com/danamlund/quague-legacy
@@ -43,7 +43,7 @@ Armor increases your starting and maximum armor.
 After level 20 your gain armor when killing monster.
 
 Powerup determines the time of power ups.
-After level 20 you start levels with quad damage for a short while.
+After level 20 you start levels with quad and pent for a short while.
 
 Weapons is which weapons you start with. Additional weapons are quad axe, and multi shafts.
 
@@ -66,9 +66,17 @@ Impulse
 impulse 160 prints a status of your levels.
 impulse 161 gives you one million money.
 
--------------
-Changelog 1.2
--------------
+
+------------------------
+Changelog 1.3 2021-06-13
+------------------------
+Fixed bug where health would not be saved between levels when having at least one scavenge level.
+Fixed bug where powerups above level 20 would not activate on all new levels
+Fixed bug with max ammo on ammo pickups
+
+------------------------
+Changelog 1.2 2021-05-15
+------------------------
 Change armor to be percentage of total armor based on level.
 Change start armor to green.
 Change ammo multipliers to default quake (100 max shells,rockets, 200 max nails,cells).
@@ -76,3 +84,13 @@ Add new weapon quad axe.
 Add new weapon multi shafts.
 Give money when completing level and extra with 90% kills and extra with secrets.
 Remove discount and replace it with scavenge.
+
+------------------------
+Changelog 1.1 2017-09-28
+------------------------
+Updates after level 20
+
+------------------------
+Changelog 1.0 2017-09-27
+------------------------
+?

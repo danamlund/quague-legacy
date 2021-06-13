@@ -46,10 +46,12 @@ void() addLevelsToArray =
 void() MyWorldspawn =
 {
         // cache quad sounds in case getPowerLevel() > 20
-	precache_model ("progs/quaddama.mdl");
-	precache_sound ("items/damage.wav");
-	precache_sound ("items/damage2.wav");
-	precache_sound ("items/damage3.wav");
+        precache_model ("progs/quaddama.mdl");
+        precache_sound ("items/damage.wav");
+        precache_sound ("items/damage2.wav");
+        precache_sound ("items/damage3.wav");
+        precache_sound ("items/protect2.wav");
+        precache_sound ("items/protect3.wav");
 }
 
 float() getMoney =
@@ -145,17 +147,6 @@ void(float level) setWeaponLevel =
 float() getPowerLevel =
 {
         return getMid(parm13);
-}
-float() getPowerTimeStart =
-{
-        if (getPowerLevel() > 20) {
-          local float time = floor(getPowerLevel() / 5.0);
-          if (time > 60) {
-            time = 60;
-          }
-          return time;
-        }
-        return 0;
 }
 float() getPowerTime =
 {
@@ -294,7 +285,7 @@ float(float v) getCells =
 
 void() setStartGear =
 {
-        self.max_health = 20 + getHealthLevel() * 5;
+        self.max_health = getMaxHealth();
         self.health = self.max_health;
 
         self.items = IT_AXE + IT_SHOTGUN;
@@ -330,14 +321,7 @@ void() setStartGear =
 
         self.weapon = IT_SHOTGUN;
         self.currentammo = self.ammo_shells;
-	W_SetCurrentAmmo ();
-
-        if (getPowerTimeStart() > 0) {
-           self.super_time = 1;
-           self.super_damage_finished = time + getPowerTimeStart();
-	   self.items = self.items | IT_QUAD;
-	   SUB_UseTargets();
-        }
+        W_SetCurrentAmmo ();
 }
 
 void() printProgressionStatus =
@@ -367,7 +351,7 @@ void() printProgressionStatus =
 float() getScavengedAmmo =
 {
         if (getScavengeLevel() <= 20) return 0;
-        local float val = random() * (getScavengeLevel()-20);
+        local float val = random() * (getScavengeLevel() - 20);
         local float decimals = val - floor(val);
         if (random() > decimals) val++;
         return floor(val);
@@ -375,7 +359,7 @@ float() getScavengedAmmo =
 
 void() validateMax =
 {
-        if (self.health > self.max_health) self.health = self.max_health;
+        if (self.health > getMaxHealth()) self.health = getMaxHealth();
         if (self.ammo_shells > getMaxAmmo()) self.ammo_shells = getMaxAmmo();
         if (self.ammo_nails > getNails(getMaxAmmo())) self.ammo_nails = getNails(getMaxAmmo());
         if (self.ammo_rockets > getMaxAmmo()) self.ammo_rockets = getMaxAmmo();
@@ -490,12 +474,37 @@ void() MyNewMap =
            setResetMoneyNextLevel(TRUE);
         } else {
            printProgressionStatus();
+           if (getScavengeLevel() > 0) {
+             MyPrint3("You scavenged ", ftos(getScavengeLevel()*2), " health");
+             MyPrint3(", ", ftos(getScavengeLevel()), " shells");
+             MyPrint3(", ", ftos(getNails(getScavengeLevel())), " nails");
+             MyPrint3(", ", ftos(getScavengeLevel()), " rockets");
+             MyPrint3(", ", ftos(getCells(getScavengeLevel())), " cells");
+             MyPrint1("\n");
+             self.health += getScavengeLevel() * 2;
+             self.ammo_shells += getScavengeLevel();
+             self.ammo_nails += getNails(getScavengeLevel());
+             self.ammo_rockets += getScavengeLevel();
+             self.ammo_cells += getCells(getScavengeLevel());
+             validateMax();
+          }
+
+          if (getPowerLevel() > 20) {
+             local float powerTimeStart = floor(5 + (getPowerLevel() - 20)/2);
+             self.super_time = 1;
+             self.super_damage_finished = time + powerTimeStart;
+             self.invincible_time = 1;
+             self.invincible_finished = time + powerTimeStart;
+             self.items = self.items | IT_QUAD | IT_INVULNERABILITY;
+             SUB_UseTargets();
+          }
         }
 }
 
 void() MyPlayerPostThink =
 {
         local string money;
+        local float scavenged;
 
         if (firstTime()) {
            setResetMoneyNextLevel(TRUE);
@@ -514,7 +523,7 @@ void() MyPlayerPostThink =
            }
            return;
         }
-        
+
 
         if (time > 2.0 && !MyTriggeredNewLevel) {
           MyNewMap();
@@ -551,10 +560,34 @@ void() MyPlayerPostThink =
 
           if (getScavengeLevel() > 20) {
              local float randomValue = random();
-             if (randomValue < 0.25) self.ammo_shells += getScavengedAmmo();
-             else if (randomValue < 0.5) self.ammo_nails += getNails(getScavengedAmmo());
-             else if (randomValue < 0.75) self.ammo_rockets += getScavengedAmmo();
-             else self.ammo_cells += getCells(getScavengedAmmo());
+             if (randomValue < 0.25) {
+               scavenged = getScavengedAmmo();
+               if (scavenged >= 1) {
+                 self.ammo_shells += scavenged;
+                 MyPrint3("You scavenge ", ftos(scavenged), " shells\n");
+               }
+             }
+             else if (randomValue < 0.5) {
+               scavenged = getNails(getScavengedAmmo());
+               if (scavenged >= 1) {
+                 self.ammo_nails += scavenged;
+                 MyPrint3("You scavenge ", ftos(scavenged), " nails\n");
+               }
+             }
+             else if (randomValue < 0.75) {
+               scavenged = getScavengedAmmo();
+               if (scavenged >= 1) {
+                 self.ammo_rockets += scavenged;
+                 MyPrint3("You scavenge ", ftos(scavenged), " rockets\n");
+               }
+             }
+             else {
+               scavenged = getCells(getScavengedAmmo());
+               if (scavenged >= 1) {
+                 self.ammo_cells += scavenged;
+                 MyPrint3("You scavenge ", ftos(scavenged), " cells\n");
+               }
+             }
              validateMax();
           }
         }
@@ -611,7 +644,7 @@ float() MyGotoNextMap =
           MyGotMapDoneMoney = TRUE;
           moneyAdded = addMoney(20);
           MyPrint3("Got ", ftos(moneyAdded), " money for completing map\n");
-          
+
           if (killed_monsters / total_monsters >= 0.9) {
              moneyAdded = addMoney(20);
              MyPrint3("Got ", ftos(moneyAdded), " money for killing 90 percent of monsters\n");
@@ -620,15 +653,6 @@ float() MyGotoNextMap =
           if (secretMoney > 0) {
              moneyAdded = addMoney(secretMoney);
              MyPrint3("Got ", ftos(moneyAdded), " money for finding secrets\n");
-          }
-
-          if (getScavengeLevel() > 0) {
-            self.health += getScavengeLevel() * 2;
-            self.ammo_shells += getScavengeLevel();
-            self.ammo_nails += getNails(getScavengeLevel());
-            self.ammo_rockets += getScavengeLevel();
-            self.ammo_cells += getCells(getScavengeLevel());
-            validateMax();
           }
         }
 
@@ -652,7 +676,7 @@ float() MyGotoNextMap =
 
 void() MyW_Attack =
 {
-	if ((self.weapon == IT_AXE && getWeaponLevel() >= 7) || (self.weapon == IT_LIGHTNING && getWeaponLevel() >= 8)) {
+        if ((self.weapon == IT_AXE && getWeaponLevel() >= 7) || (self.weapon == IT_LIGHTNING && getWeaponLevel() >= 8)) {
           if (self.super_sound < time) {
             self.super_sound = time + 1;
             sound (self, CHAN_BODY, "items/damage3.wav", 1, ATTN_NORM);
@@ -671,7 +695,7 @@ float() MyGetAxeDamage =
 
 void() MyW_FireLightning =
 {
-        
+
         if (getWeaponLevel() < 8)
           return;
         local float shafts = 2 + getWeaponLevel() - 8;
@@ -684,19 +708,19 @@ void() MyW_FireLightning =
         i = 0;
         while (i+1 < shafts) {
           tempEntity = spawn();
-	  org = self.origin;
+          org = self.origin;
           mul = 1 + floor(i/2);
           if ((i % 2) == 0) mul *= -1;
-	  traceline (org, org + '0 0 16' + v_forward*600 + v_right*50*mul, TRUE, self);
-	  WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
-	  WriteByte (MSG_BROADCAST, TE_LIGHTNING2);
-	  WriteEntity (MSG_BROADCAST, tempEntity);
-	  WriteCoord (MSG_BROADCAST, org_x);
-	  WriteCoord (MSG_BROADCAST, org_y);
-	  WriteCoord (MSG_BROADCAST, org_z);
-	  WriteCoord (MSG_BROADCAST, trace_endpos_x);
-	  WriteCoord (MSG_BROADCAST, trace_endpos_y);
-	  WriteCoord (MSG_BROADCAST, trace_endpos_z);
+          traceline (org, org + '0 0 16' + v_forward*600 + v_right*50*mul, TRUE, self);
+          WriteByte (MSG_BROADCAST, SVC_TEMPENTITY);
+          WriteByte (MSG_BROADCAST, TE_LIGHTNING2);
+          WriteEntity (MSG_BROADCAST, tempEntity);
+          WriteCoord (MSG_BROADCAST, org_x);
+          WriteCoord (MSG_BROADCAST, org_y);
+          WriteCoord (MSG_BROADCAST, org_z);
+          WriteCoord (MSG_BROADCAST, trace_endpos_x);
+          WriteCoord (MSG_BROADCAST, trace_endpos_y);
+          WriteCoord (MSG_BROADCAST, trace_endpos_z);
           LightningDamage (org, trace_endpos + v_forward*4 + v_right*50*mul, self, 30);
           remove(tempEntity);
           i++;
